@@ -1,7 +1,10 @@
+const express = require("express");
+const { createBooking } = require("../controllers/passengerController");
+const authMiddleware = require("../middlewares/authMiddleware");
+
+const router = express.Router();
 
 
-// Route to get previous bookings
-// router.get("/bookings", getPassengerBookings);
+router.post('/ride', authMiddleware, createBooking);
 
-// Route to provide feedback for a booking
-// router.post("/feedback", provideFeedback);
+module.exports = router;

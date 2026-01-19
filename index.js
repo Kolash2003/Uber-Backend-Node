@@ -3,6 +3,7 @@ const http = require('http');
 const cors = require('cors');
 const dotenv = require('dotenv');
 const authRoutes = require('./routes/authRoutes');
+const passengerRoutes = require('./routes/passengerRoutes');
 const mongoose = require('mongoose');
 dotenv.config();
 
@@ -20,6 +21,7 @@ mongoose.connect(process.env.MONGO_URI).then(() => {
 });
 
 app.use('/api/auth', authRoutes);
+app.use('/api/passenger', passengerRoutes);
 
 app.use((req, res) => {
     res.status(404).json({
