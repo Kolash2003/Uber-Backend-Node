@@ -7,7 +7,7 @@ const updateLocation = async (driverId, { latitude, longitude }) => {
 
     try {
         // update driver location in redis
-        const res = await locationService.addDriverLocation(driverId, lon, lat);
+        const res = await locationService.addDriverLocation(driverId, lat, lon);
         // update driver location in mongodb
         await userRepository.updateLocation(driverId, {
             type: 'Point',

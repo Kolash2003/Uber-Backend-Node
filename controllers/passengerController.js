@@ -5,13 +5,17 @@ const createBooking = async (req, res) => {
         const { source, destination } = req.body;
         // create a booking > persist a booking object in mongodb
         const booking = await bookingService.createBooking({ userId: req.user._id, source, destination });
-
         // find nearby drivers >> using redisdb
+        const driversIds = [];
+
+        const nearbyDrivers = await bookingService.findNearbyDrivers(source);
+        console.log(nearbyDrivers);
 
         // notify the nearby drivers >> using socket.io
 
         res.status(201).send({
             data: booking,
+            drivers: nearbyDrivers,
             success: true,
             error: null,
             message: 'Booking created successfully'
