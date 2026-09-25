@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String    @id @default(cuid())
+  firstName    String
+  lastName     String
+  email        String?   @unique
+  phoneNumber  String?   @unique
+  password     String?
+  role         String    @default("rider") // "rider" | "driver"
+  rating       Float     @default(4.9)
+  totalTrips   Int       @default(0)
+  photoUrl     String?
+  isOnline     Boolean   @default(false) // driver online flag
+  lastLat      Float?
+  lastLng      Float?
+  vehicle      Json? // { make, model, color, licensePlate, year }
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  bookings       Booking[]      @relation("PassengerBookings")
+  driverBookings Booking[]      @relation("DriverBookings")
+  paymentMethods PaymentMethod[]
+  savedPlaces    SavedPlace[]
+}
+
+model Otp {
+  id          String    @id @default(cuid())
+  phoneNumber String
+  code        String
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+
+  @@index([phoneNumber])
+}
+
+model Booking {
+  id              String    @id @default(cuid())
+  passengerId     String
+  driverId        String?
+  rideType        String    @default("economy")
+  status          String    @default("searching") // searching|matched|en_route|arrived|in_progress|completed|cancelled
+  pickup          Json // frontend Address { id,label,primary,secondary?,location:{lat,lng} }
+  dropoff         Json // frontend Address
+  fare            Json // frontend FareEstimate
+  paymentMethodId String?
+  distanceKm      Float?
+  etaSeconds      Int?
+  rating          Int?
+  tip             Float?
+  feedback        String?
+  startedAt       DateTime?
+  completedAt     DateTime?
+  requestExpiresAt DateTime? // incoming-request countdown deadline
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  passenger User  @relation("PassengerBookings", fields: [passengerId], references: [id], onDelete: Cascade)
+  driver    User? @relation("DriverBookings", fields: [driverId], references: [id])
+
+  @@index([passengerId, status])
+  @@index([driverId, status])
+}
+
+model PaymentMethod {
+  id         String   @id @default(cuid())
+  userId     String
+  brand      String
+  last4      String
+  expMonth   Int
+  expYear    Int
+  isDefault  Boolean  @default(false)
+  holderName String?
+  createdAt  DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model SavedPlace {
+  id        String  @id @default(cuid())
+  userId    String
+  label     String
+  primary   String
+  secondary String?
+  lat       Float
+  lng       Float
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}

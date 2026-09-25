@@ -1,36 +1,28 @@
+require('dotenv').config();
 const express = require('express');
-const http = require('http');
 const cors = require('cors');
-const dotenv = require('dotenv');
 const authRoutes = require('./routes/authRoutes');
-const passengerRoutes = require('./routes/passengerRoutes');
+const tripRoutes = require('./routes/tripRoutes');
 const driverRoutes = require('./routes/driverRoutes');
-const mongoose = require('mongoose');
-dotenv.config();
+const userRoutes = require('./routes/userRoutes');
+const { notFound, errorHandler } = require('./utils/errors');
 
 const app = express();
-const server = http.createServer(app);
-const PORT = process.env.PORT || 3000;
-
 app.use(cors());
 app.use(express.json());
 
-mongoose.connect(process.env.MONGO_URI).then(() => {
-    console.log('Connected to MongoDB');
-}).catch((err) => {
-    console.log(err);
-});
+app.get('/health', (req, res) => res.json({ ok: true }));
 
 app.use('/api/auth', authRoutes);
-app.use('/api/passenger', passengerRoutes);
+app.use('/api/trip', tripRoutes);
+app.use('/api/trips', tripRoutes);
 app.use('/api/driver', driverRoutes);
+app.use('/api', userRoutes);
 
-app.use((req, res) => {
-    res.status(404).json({
-        error: 'Not found'
-    });
-});
+app.use(notFound);
+app.use(errorHandler);
 
-server.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+const PORT = process.env.PORT || 4000;
+app.listen(PORT, () => {
+  console.log(`[uberBackend] listening on http://localhost:${PORT}`);
 });

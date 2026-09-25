@@ -1,9 +1,11 @@
-const express = require("express");
-const authMiddleware = require("../middlewares/authMiddleware");
-const { updateLocation } = require("../controllers/driverController");
+const { Router } = require('express');
+const { authMiddleware } = require('../middlewares/auth');
+const driver = require('../controllers/driverController');
 
-const router = express.Router();
+const router = Router();
+router.use(authMiddleware);
 
-router.post('/location', authMiddleware, updateLocation);
+router.post('/location', driver.updateLocation);
+router.post('/online', driver.setOnline);
 
 module.exports = router;

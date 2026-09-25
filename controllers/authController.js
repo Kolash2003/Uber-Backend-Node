@@ -1,38 +1,28 @@
+const { asyncHandler } = require('../utils/errors');
 const authService = require('../services/authService');
 
-const register = async (req, res) => {
-    try {
-        const { user, token } = await authService.register(req.body);
-        res.status(201).send({
-            data: {
-                user,
-                token
-            },
-            success: true,
-            error: null,
-            message: 'User registered successfully'
-        })
-    } catch (error) {
-        res.status(400).send({ error: error.message });
-    }
-};
+const signup = asyncHandler(async (req, res) => {
+  const result = await authService.signup(req.body);
+  res.status(201).json(result);
+});
 
-const login = async (req, res) => {
-    try {
-        const { email, password } = req.body;
-        const { user, token } = await authService.login({ email, password });
-        res.status(200).send({
-            data: {
-                user,
-                token
-            },
-            success: true,
-            error: null,
-            message: 'User logged in successfully'
-        })
-    } catch (error) {
-        res.status(400).send({ error: error.message });
-    }
-}
+const login = asyncHandler(async (req, res) => {
+  const result = await authService.login(req.body);
+  res.json(result);
+});
 
-module.exports = { register, login };
+const requestOtp = asyncHandler(async (req, res) => {
+  const result = await authService.requestOtp(req.body);
+  res.json(result);
+});
+
+const verifyOtp = asyncHandler(async (req, res) => {
+  const result = await authService.verifyOtp(req.body);
+  res.json(result);
+});
+
+const me = asyncHandler(async (req, res) => {
+  res.json(await authService.getMe(req.userId));
+});
+
+module.exports = { signup, login, requestOtp, verifyOtp, me };
