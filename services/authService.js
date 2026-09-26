@@ -2,6 +2,7 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const prisma = require('../prisma/client');
 const { HttpError } = require('../utils/errors');
+const { sendOtpEmail, isMailerConfigured, maskEmail } = require('./mailService');
 const {
   JWT_SECRET,
   OTP_TTL_SECONDS,
@@ -83,11 +84,28 @@ async function login({ email, password }) {
 
 async function requestOtp({ phoneNumber }) {
   if (!phoneNumber) throw new HttpError(400, 'Phone number is required');
+
+  const user = await prisma.user.findUnique({ where: { phoneNumber } });
+  if (!user) throw new HttpError(404, 'No account found for this phone number');
+  if (!user.email) throw new HttpError(400, 'No email on file for this account. Add one to receive a code.');
+
   const code = generateOtpCode();
   await prisma.otp.create({
     data: { phoneNumber, code, expiresAt: new Date(Date.now() + OTP_TTL_SECONDS * 1000) },
   });
-  return { ok: true, devCode: code };
+
+  if (!isMailerConfigured) {
+    return { ok: true, devCode: code };
+  }
+
+  try {
+    await sendOtpEmail({ to: user.email, code });
+  } catch (err) {
+    console.error('[requestOtp] failed to send email', err);
+    throw new HttpError(502, "Couldn't send the code. Try again.");
+  }
+
+  return { ok: true, emailHint: maskEmail(user.email) };
 }
 
 async function verifyOtp({ phoneNumber, code }) {

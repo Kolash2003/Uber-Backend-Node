@@ -6,6 +6,11 @@ const OTP_TTL_SECONDS = 10 * 60;
 const DEV_OTP = process.env.DEV_OTP || '123456';
 const OTP_ALLOW_ANY = process.env.OTP_ALLOW_ANY === 'true';
 
+// Gmail SMTP (use a Google App Password, not the account password)
+const GMAIL_USER = process.env.GMAIL_USER;
+const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
+const MAIL_FROM = process.env.MAIL_FROM || GMAIL_USER;
+
 // Driver matching
 const NEARBY_DRIVER_RADIUS_KM = 15;
 const REQUEST_WINDOW_SECONDS = 15;
@@ -70,6 +75,9 @@ module.exports = {
   OTP_TTL_SECONDS,
   DEV_OTP,
   OTP_ALLOW_ANY,
+  GMAIL_USER,
+  GMAIL_APP_PASSWORD,
+  MAIL_FROM,
   NEARBY_DRIVER_RADIUS_KM,
   REQUEST_WINDOW_SECONDS,
   BASIC_FARE,
