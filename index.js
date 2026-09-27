@@ -8,7 +8,12 @@ const userRoutes = require('./routes/userRoutes');
 const { notFound, errorHandler } = require('./utils/errors');
 
 const app = express();
-app.use(cors());
+app.use(
+  cors({
+    origin: process.env.FRONTEND_URL || process.env.BETTER_AUTH_URL || 'http://localhost:3000',
+    credentials: true,
+  })
+);
 app.use(express.json());
 
 app.get('/health', (req, res) => res.json({ ok: true }));

@@ -1,20 +1,29 @@
-const jwt = require('jsonwebtoken');
 const prisma = require('../prisma/client');
-const { JWT_SECRET } = require('../config/constants');
+const { BETTER_AUTH_URL } = require('../config/constants');
 
 async function authMiddleware(req, res, next) {
-  const header = req.headers.authorization || '';
-  const token = header.startsWith('Bearer ') ? header.slice(7) : null;
-  if (!token) return res.status(401).json({ error: 'Missing authorization token' });
+  const cookie = req.headers.cookie || '';
 
-  let decoded;
+  let session;
   try {
-    decoded = jwt.verify(token, JWT_SECRET);
+    const response = await fetch(`${BETTER_AUTH_URL}/api/auth/get-session`, {
+      headers: cookie ? { cookie } : {},
+    });
+    if (!response.ok) {
+      return res.status(401).json({ error: 'Invalid or expired session' });
+    }
+    session = await response.json();
   } catch (err) {
-    return res.status(401).json({ error: 'Invalid or expired token' });
+    console.error('[authMiddleware] failed to validate session', err);
+    return res.status(503).json({ error: 'Auth service unavailable' });
   }
 
-  const user = await prisma.user.findUnique({ where: { id: decoded.id } });
+  const userId = session?.user?.id;
+  if (!userId) {
+    return res.status(401).json({ error: 'Missing or invalid session' });
+  }
+
+  const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) return res.status(401).json({ error: 'Account not found' });
 
   req.user = user;

@@ -1,15 +1,7 @@
 const SOCKET_SERVER_URL = process.env.SOCKET_SERVER_URL || 'http://localhost:4001';
 
-const JWT_SECRET = process.env.JWT_SECRET || 'mysecretkey';
-
-const OTP_TTL_SECONDS = 10 * 60;
-const DEV_OTP = process.env.DEV_OTP || '123456';
-const OTP_ALLOW_ANY = process.env.OTP_ALLOW_ANY === 'true';
-
-// Gmail SMTP (use a Google App Password, not the account password)
-const GMAIL_USER = process.env.GMAIL_USER;
-const GMAIL_APP_PASSWORD = process.env.GMAIL_APP_PASSWORD;
-const MAIL_FROM = process.env.MAIL_FROM || GMAIL_USER;
+// Next.js app that hosts Better Auth. The backend validates sessions against it.
+const BETTER_AUTH_URL = process.env.BETTER_AUTH_URL || process.env.FRONTEND_URL || 'http://localhost:3000';
 
 // Driver matching
 const NEARBY_DRIVER_RADIUS_KM = 15;
@@ -71,13 +63,7 @@ const GEOCODE_PLACES = [
 
 module.exports = {
   SOCKET_SERVER_URL,
-  JWT_SECRET,
-  OTP_TTL_SECONDS,
-  DEV_OTP,
-  OTP_ALLOW_ANY,
-  GMAIL_USER,
-  GMAIL_APP_PASSWORD,
-  MAIL_FROM,
+  BETTER_AUTH_URL,
   NEARBY_DRIVER_RADIUS_KM,
   REQUEST_WINDOW_SECONDS,
   BASIC_FARE,
