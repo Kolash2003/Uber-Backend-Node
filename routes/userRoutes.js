@@ -8,6 +8,7 @@ const router = Router();
 router.get('/saved-places', authMiddleware, user.savedPlaces);
 router.get('/payment-methods', authMiddleware, user.paymentMethods);
 router.get('/earnings', authMiddleware, user.earnings);
+router.post('/me/location', authMiddleware, user.updateLocation);
 router.get('/geocode', lookup.geocodePlaces);
 router.get('/fare/estimate', lookup.fareEstimate);
 

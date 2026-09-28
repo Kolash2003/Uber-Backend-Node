@@ -13,6 +13,10 @@ function serializeUser(user) {
     rating: user.rating,
     totalTrips: user.totalTrips,
     vehicle: user.vehicle ?? null,
+    lastLat: user.lastLat ?? null,
+    lastLng: user.lastLng ?? null,
+    lastAddress: user.lastAddress ?? null,
+    hasLocation: user.lastLat != null && user.lastLng != null,
   };
 }
 

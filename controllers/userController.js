@@ -1,6 +1,7 @@
-const { asyncHandler } = require('../utils/errors');
+const { asyncHandler, HttpError } = require('../utils/errors');
 const prisma = require('../prisma/client');
 const tripService = require('../services/tripService');
+const authService = require('../services/authService');
 const { DEFAULT_PLACES, DEFAULT_PAYMENT_METHODS } = require('../config/constants');
 
 // Accounts are created by Better Auth in the frontend, so seed the demo
@@ -58,8 +59,39 @@ const paymentMethods = asyncHandler(async (req, res) => {
   );
 });
 
+const updateLocation = asyncHandler(async (req, res) => {
+  const { latitude, longitude, address } = req.body ?? {};
+
+  if (
+    typeof latitude !== 'number' ||
+    typeof longitude !== 'number' ||
+    !Number.isFinite(latitude) ||
+    !Number.isFinite(longitude) ||
+    latitude < -90 ||
+    latitude > 90 ||
+    longitude < -180 ||
+    longitude > 180
+  ) {
+    throw new HttpError(400, 'latitude and longitude must be valid numbers');
+  }
+
+  const user = await prisma.user.update({
+    where: { id: req.userId },
+    data: {
+      lastLat: latitude,
+      lastLng: longitude,
+      ...(typeof address === 'string' && address.trim()
+        ? { lastAddress: address.trim() }
+        : {}),
+      locationUpdatedAt: new Date(),
+    },
+  });
+
+  res.json(authService.serializeUser(user));
+});
+
 const earnings = asyncHandler(async (req, res) => {
   res.json(await tripService.computeEarnings(req.userId));
 });
 
-module.exports = { savedPlaces, paymentMethods, earnings };
+module.exports = { savedPlaces, paymentMethods, updateLocation, earnings };

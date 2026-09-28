@@ -8,23 +8,25 @@ datasource db {
 }
 
 model User {
-  id            String   @id @default(cuid())
-  name          String?
-  firstName     String
-  lastName      String
-  email         String?  @unique
-  emailVerified Boolean  @default(false)
-  phoneNumber   String?  @unique
-  role          String   @default("rider") // "rider" | "driver"
-  rating        Float    @default(4.9)
-  totalTrips    Int      @default(0)
-  photoUrl      String? // Better Auth "image" is mapped onto this column
-  isOnline      Boolean  @default(false) // driver online flag
-  lastLat       Float?
-  lastLng       Float?
-  vehicle       Json? // { make, model, color, licensePlate, year }
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  id                String    @id @default(cuid())
+  name              String?
+  firstName         String
+  lastName          String
+  email             String?   @unique
+  emailVerified     Boolean   @default(false)
+  phoneNumber       String?   @unique
+  role              String    @default("rider") // "rider" | "driver"
+  rating            Float     @default(4.9)
+  totalTrips        Int       @default(0)
+  photoUrl          String? // Better Auth "image" is mapped onto this column
+  isOnline          Boolean   @default(false) // driver online flag
+  lastLat           Float?
+  lastLng           Float?
+  lastAddress       String? // reverse-geocoded label for lastLat/lastLng
+  locationUpdatedAt DateTime?
+  vehicle           Json? // { make, model, color, licensePlate, year }
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
 
   sessions       Session[]
   accounts       Account[]
