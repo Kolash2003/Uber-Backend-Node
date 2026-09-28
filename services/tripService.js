@@ -38,7 +38,16 @@ function serializeTrip(booking) {
     dropoff: booking.dropoff,
     fare: booking.fare,
     paymentMethodId: booking.paymentMethodId,
+    createdAt: booking.createdAt,
   };
+  if (booking.distanceKm != null) trip.distanceKm = booking.distanceKm;
+  if (booking.routePolyline) trip.routePolyline = booking.routePolyline;
+  if (booking.startedAt && booking.completedAt) {
+    trip.durationMinutes = Math.max(
+      1,
+      Math.round((booking.completedAt - booking.startedAt) / 60000)
+    );
+  }
   if (booking.driver) {
     trip.driver = driverPayload(booking.driver);
   }
@@ -236,8 +245,22 @@ async function updateTripStatus(tripId, driverId, nextStatus) {
   }
 
   const data = { status: nextStatus };
-  if (nextStatus === 'in_progress') data.startedAt = new Date();
-  if (nextStatus === 'completed') data.completedAt = new Date();
+  if (nextStatus === 'in_progress') {
+    data.startedAt = new Date();
+    data.routePolyline = [booking.pickup.location];
+    data.distanceKm = 0;
+  }
+  if (nextStatus === 'completed') {
+    data.completedAt = new Date();
+    const trail = Array.isArray(booking.routePolyline) ? booking.routePolyline : [];
+    const last = trail[trail.length - 1];
+    const end = booking.dropoff.location;
+    if (last) {
+      data.routePolyline = [...trail, end];
+      data.distanceKm =
+        Math.round(((booking.distanceKm || 0) + haversineKm(last.lat, last.lng, end.lat, end.lng)) * 1000) / 1000;
+    }
+  }
 
   const updated = await prisma.booking.update({
     where: { id: tripId },
